@@ -15,6 +15,8 @@
 #include "NearestNeighborTSP.h"
 #include "MST.h"
 #include "InsertionHeuristicTSP.h"
+#include "ConvexHull.h"
+#include "ConvexHullHeuristicTSP.h"
 Canvas* gCanvas;
 Text* logs;
 std::vector<Element*> elems;
@@ -51,12 +53,24 @@ class Action{
 				solveCheapestInsertionHeuristicTSP();
 			}else if(strcmp("ritsp",token.c_str())==0){
 				solveRandomInsertionHeuristicTSP();
+			}else if(strcmp("chnitsp",token.c_str())==0){
+				solveConvexHullHeuristicNearestInsertionTSP();
+			}else if(strcmp("chfitsp",token.c_str())==0){
+				solveConvexHullHeuristicFarthestInsertionTSP();
+			}else if(strcmp("chritsp",token.c_str())==0){
+				solveConvexHullHeuristicRandomInsertionTSP();
+			}else if(strcmp("chcitsp",token.c_str())==0){
+				solveConvexHullHeuristicCheapestInsertionTSP();
 			}else if(strcmp("pmsttsp",token.c_str())==0){
 				solvePrieMSTTSP();	
+			}else if(strcmp("chj",token.c_str())==0){
+				solveConvexHullJarvis();
+			}else if(strcmp("chgs",token.c_str())==0){
+				solveConvexHullGrahamScan();
 			}else if(strcmp("about",token.c_str())==0){
 				logs->addNewLine("Hello and welcome , this application may help you to see resual of exection of different algorithms(mostly on graph). Please look at info to understand which functionality is avalible.\n");
 			}else if(strcmp("info",token.c_str())==0){
-				logs->addNewLine("rg <n> - generate random graph with n points\n clear - clear canvas\n ritsp random insertion heuristic to solve tsp\n citsp cheapest insertion heuristic to sove tsp\n fitsp farthest insertion heuristic to solve tsp\n nitsp nearest insertion tsp solution\n mstp - show minimal spanding tree computed with Prim algorithm\n mstk - show minimal spanding tree computed with Kruscal algorithm\n nntsp - solve tsp with neares neigbor algorithm\n kmsttsp- tsp solution using Kruscal mst\n pmsttsp - tspsolution using Prim mst\n");
+				logs->addNewLine("rg <n> - generate random graph with n points\n clear - clear canvas\n ch[ni|fi|ri|ci]tsp Convex hull heuristic to solve tsp using nierest insertion (ni) or farthest insertion (fi) or random insertion (ri) or cheapest insertion (ci)\n chgs - convex hull Graham Scan\n chj - convex hull jarvis algorithm\n ritsp random insertion heuristic to solve tsp\n citsp cheapest insertion heuristic to sove tsp\n fitsp farthest insertion heuristic to solve tsp\n nitsp nearest insertion tsp solution\n mstp - show minimal spanding tree computed with Prim algorithm\n mstk - show minimal spanding tree computed with Kruscal algorithm\n nntsp - solve tsp with neares neigbor algorithm\n kmsttsp- tsp solution using Kruscal mst\n pmsttsp - tspsolution using Prim mst\n");
 			}else{
 				logs->addNewLine("Unknown comand:"+str);
 			}
@@ -117,6 +131,222 @@ class Action{
 				elems.push_back(elem);
 			}
 			logstr=logstr+"\n Size :"+std::to_string(s)+"\n";		
+			for(int i = 0;i<coord.size();i++){
+				Element* elem = new Circle(std::get<0>(coord[i]),std::get<1>(coord[i]),8,ORANGE);
+				elem->setLabel(std::to_string(i));
+				gCanvas->addElement(elem);
+				elems.push_back(elem);
+			}
+			logs->addNewLine(logstr);
+		};
+		static void solveConvexHullGrahamScan(){
+			std::vector<std::tuple<int,int>> coord;
+			for(auto i : elems){
+				if(i->getElementType() == ElementType::CIRCLE){
+					coord.push_back(std::make_tuple(i->getXCoord()[0],i->getYCoord()[0]));
+				}
+			}
+			std::vector<int> ConvHull = computeConvexHullGrahamScan(coord);
+			clearCanvas();
+			std::string logstr="Convex Hull solution:\n Path: "+std::to_string(ConvHull[0])+"-";
+			double d = 0;
+			for(int i =1;i<ConvHull.size();i++){
+				int x1 = std::get<0>(coord[ConvHull[i-1]]);
+				int x2 = std::get<0>(coord[ConvHull[i]]);
+				int y1 = std::get<1>(coord[ConvHull[i-1]]);
+				int y2 = std::get<1>(coord[ConvHull[i]]);
+				d+=std::sqrt(pow(x2-x1,2)+pow(y2-y1,2));
+				logstr=logstr+std::to_string(i)+"-";
+				Element* elem = new Line(x1,y1,x2,y2,2,BLACK);
+				gCanvas->addElement(elem);
+				elems.push_back(elem);
+			}
+			int x1 = std::get<0>(coord[ConvHull[0]]);
+			int x2 = std::get<0>(coord[ConvHull[ConvHull.size()-1]]);
+			int y1 = std::get<1>(coord[ConvHull[0]]);
+			int y2 = std::get<1>(coord[ConvHull[ConvHull.size()-1]]);
+			d+=std::sqrt(pow(x2-x1,2)+pow(y2-y1,2));
+			logstr=logstr+std::to_string(ConvHull[0])+"\n Total distance: "+std::to_string(d)+"\n";
+			for(int i = 0;i<coord.size();i++){
+				Element* elem = new Circle(std::get<0>(coord[i]),std::get<1>(coord[i]),8,ORANGE);
+				elem->setLabel(std::to_string(i));
+				gCanvas->addElement(elem);
+				elems.push_back(elem);
+			}
+			logs->addNewLine(logstr);
+		};
+		static void solveConvexHullJarvis(){
+			std::vector<std::tuple<int,int>> coord;
+			for(auto i : elems){
+				if(i->getElementType() == ElementType::CIRCLE){
+					coord.push_back(std::make_tuple(i->getXCoord()[0],i->getYCoord()[0]));
+				}
+			}
+			std::vector<int> ConvHull = computeConvexHullJarvis(coord);
+			clearCanvas();
+			std::string logstr="Convex Hull solution:\n Path: "+std::to_string(ConvHull[0])+"-";
+			double d = 0;
+			for(int i =1;i<ConvHull.size();i++){
+				int x1 = std::get<0>(coord[ConvHull[i-1]]);
+				int x2 = std::get<0>(coord[ConvHull[i]]);
+				int y1 = std::get<1>(coord[ConvHull[i-1]]);
+				int y2 = std::get<1>(coord[ConvHull[i]]);
+				d+=std::sqrt(pow(x2-x1,2)+pow(y2-y1,2));
+				logstr=logstr+std::to_string(i)+"-";
+				Element* elem = new Line(x1,y1,x2,y2,2,BLACK);
+				gCanvas->addElement(elem);
+				elems.push_back(elem);
+			}
+			int x1 = std::get<0>(coord[ConvHull[0]]);
+			int x2 = std::get<0>(coord[ConvHull[ConvHull.size()-1]]);
+			int y1 = std::get<1>(coord[ConvHull[0]]);
+			int y2 = std::get<1>(coord[ConvHull[ConvHull.size()-1]]);
+			d+=std::sqrt(pow(x2-x1,2)+pow(y2-y1,2));
+			logstr=logstr+std::to_string(ConvHull[0])+"\n Total distance: "+std::to_string(d)+"\n";
+			for(int i = 0;i<coord.size();i++){
+				Element* elem = new Circle(std::get<0>(coord[i]),std::get<1>(coord[i]),8,ORANGE);
+				elem->setLabel(std::to_string(i));
+				gCanvas->addElement(elem);
+				elems.push_back(elem);
+			}
+			logs->addNewLine(logstr);
+		};
+		static void solveConvexHullHeuristicNearestInsertionTSP(){
+			std::vector<std::tuple<int,int>> coord;
+			for(auto i : elems){
+				if(i->getElementType() == ElementType::CIRCLE){
+					coord.push_back(std::make_tuple(i->getXCoord()[0],i->getYCoord()[0]));
+				}
+			}
+			std::vector<int> MSTResult = computeConvexHullHeuristicNearestInsertionTSP(coord);
+			clearCanvas();
+			std::string logstr="Nearest insertion TSP solution:\n Path: "+std::to_string(MSTResult[0])+"-";
+			double d = 0;
+			for(int i =1;i<MSTResult.size();i++){
+				int x1 = std::get<0>(coord[MSTResult[i-1]]);
+				int x2 = std::get<0>(coord[MSTResult[i]]);
+				int y1 = std::get<1>(coord[MSTResult[i-1]]);
+				int y2 = std::get<1>(coord[MSTResult[i]]);
+				d+=std::sqrt(pow(x2-x1,2)+pow(y2-y1,2));
+				logstr=logstr+std::to_string(i)+"-";
+				Element* elem = new Line(x1,y1,x2,y2,2,BLACK);
+				gCanvas->addElement(elem);
+				elems.push_back(elem);
+			}
+			int x1 = std::get<0>(coord[MSTResult[0]]);
+			int x2 = std::get<0>(coord[MSTResult[MSTResult.size()-1]]);
+			int y1 = std::get<1>(coord[MSTResult[0]]);
+			int y2 = std::get<1>(coord[MSTResult[MSTResult.size()-1]]);
+			d+=std::sqrt(pow(x2-x1,2)+pow(y2-y1,2));
+			logstr=logstr+std::to_string(MSTResult[0])+"\n Total distance: "+std::to_string(d)+"\n";
+			for(int i = 0;i<coord.size();i++){
+				Element* elem = new Circle(std::get<0>(coord[i]),std::get<1>(coord[i]),8,ORANGE);
+				elem->setLabel(std::to_string(i));
+				gCanvas->addElement(elem);
+				elems.push_back(elem);
+			}
+			logs->addNewLine(logstr);
+		};
+		static void solveConvexHullHeuristicFarthestInsertionTSP(){
+			std::vector<std::tuple<int,int>> coord;
+			for(auto i : elems){
+				if(i->getElementType() == ElementType::CIRCLE){
+					coord.push_back(std::make_tuple(i->getXCoord()[0],i->getYCoord()[0]));
+				}
+			}
+			std::vector<int> MSTResult = computeConvexHullHeuristicFarthestInsertionTSP(coord);
+			clearCanvas();
+			std::string logstr="Nearest insertion TSP solution:\n Path: "+std::to_string(MSTResult[0])+"-";
+			double d = 0;
+			for(int i =1;i<MSTResult.size();i++){
+				int x1 = std::get<0>(coord[MSTResult[i-1]]);
+				int x2 = std::get<0>(coord[MSTResult[i]]);
+				int y1 = std::get<1>(coord[MSTResult[i-1]]);
+				int y2 = std::get<1>(coord[MSTResult[i]]);
+				d+=std::sqrt(pow(x2-x1,2)+pow(y2-y1,2));
+				logstr=logstr+std::to_string(i)+"-";
+				Element* elem = new Line(x1,y1,x2,y2,2,BLACK);
+				gCanvas->addElement(elem);
+				elems.push_back(elem);
+			}
+			int x1 = std::get<0>(coord[MSTResult[0]]);
+			int x2 = std::get<0>(coord[MSTResult[MSTResult.size()-1]]);
+			int y1 = std::get<1>(coord[MSTResult[0]]);
+			int y2 = std::get<1>(coord[MSTResult[MSTResult.size()-1]]);
+			d+=std::sqrt(pow(x2-x1,2)+pow(y2-y1,2));
+			logstr=logstr+std::to_string(MSTResult[0])+"\n Total distance: "+std::to_string(d)+"\n";
+			for(int i = 0;i<coord.size();i++){
+				Element* elem = new Circle(std::get<0>(coord[i]),std::get<1>(coord[i]),8,ORANGE);
+				elem->setLabel(std::to_string(i));
+				gCanvas->addElement(elem);
+				elems.push_back(elem);
+			}
+			logs->addNewLine(logstr);
+		};
+		static void solveConvexHullHeuristicRandomInsertionTSP(){
+			std::vector<std::tuple<int,int>> coord;
+			for(auto i : elems){
+				if(i->getElementType() == ElementType::CIRCLE){
+					coord.push_back(std::make_tuple(i->getXCoord()[0],i->getYCoord()[0]));
+				}
+			}
+			std::vector<int> MSTResult = computeConvexHullHeuristicRandomInsertionTSP(coord);
+			clearCanvas();
+			std::string logstr="Nearest insertion TSP solution:\n Path: "+std::to_string(MSTResult[0])+"-";
+			double d = 0;
+			for(int i =1;i<MSTResult.size();i++){
+				int x1 = std::get<0>(coord[MSTResult[i-1]]);
+				int x2 = std::get<0>(coord[MSTResult[i]]);
+				int y1 = std::get<1>(coord[MSTResult[i-1]]);
+				int y2 = std::get<1>(coord[MSTResult[i]]);
+				d+=std::sqrt(pow(x2-x1,2)+pow(y2-y1,2));
+				logstr=logstr+std::to_string(i)+"-";
+				Element* elem = new Line(x1,y1,x2,y2,2,BLACK);
+				gCanvas->addElement(elem);
+				elems.push_back(elem);
+			}
+			int x1 = std::get<0>(coord[MSTResult[0]]);
+			int x2 = std::get<0>(coord[MSTResult[MSTResult.size()-1]]);
+			int y1 = std::get<1>(coord[MSTResult[0]]);
+			int y2 = std::get<1>(coord[MSTResult[MSTResult.size()-1]]);
+			d+=std::sqrt(pow(x2-x1,2)+pow(y2-y1,2));
+			logstr=logstr+std::to_string(MSTResult[0])+"\n Total distance: "+std::to_string(d)+"\n";
+			for(int i = 0;i<coord.size();i++){
+				Element* elem = new Circle(std::get<0>(coord[i]),std::get<1>(coord[i]),8,ORANGE);
+				elem->setLabel(std::to_string(i));
+				gCanvas->addElement(elem);
+				elems.push_back(elem);
+			}
+			logs->addNewLine(logstr);
+		};
+		static void solveConvexHullHeuristicCheapestInsertionTSP(){
+			std::vector<std::tuple<int,int>> coord;
+			for(auto i : elems){
+				if(i->getElementType() == ElementType::CIRCLE){
+					coord.push_back(std::make_tuple(i->getXCoord()[0],i->getYCoord()[0]));
+				}
+			}
+			std::vector<int> MSTResult = computeConvexHullHeuristicCheapestInsertionTSP(coord);
+			clearCanvas();
+			std::string logstr="Nearest insertion TSP solution:\n Path: "+std::to_string(MSTResult[0])+"-";
+			double d = 0;
+			for(int i =1;i<MSTResult.size();i++){
+				int x1 = std::get<0>(coord[MSTResult[i-1]]);
+				int x2 = std::get<0>(coord[MSTResult[i]]);
+				int y1 = std::get<1>(coord[MSTResult[i-1]]);
+				int y2 = std::get<1>(coord[MSTResult[i]]);
+				d+=std::sqrt(pow(x2-x1,2)+pow(y2-y1,2));
+				logstr=logstr+std::to_string(i)+"-";
+				Element* elem = new Line(x1,y1,x2,y2,2,BLACK);
+				gCanvas->addElement(elem);
+				elems.push_back(elem);
+			}
+			int x1 = std::get<0>(coord[MSTResult[0]]);
+			int x2 = std::get<0>(coord[MSTResult[MSTResult.size()-1]]);
+			int y1 = std::get<1>(coord[MSTResult[0]]);
+			int y2 = std::get<1>(coord[MSTResult[MSTResult.size()-1]]);
+			d+=std::sqrt(pow(x2-x1,2)+pow(y2-y1,2));
+			logstr=logstr+std::to_string(MSTResult[0])+"\n Total distance: "+std::to_string(d)+"\n";
 			for(int i = 0;i<coord.size();i++){
 				Element* elem = new Circle(std::get<0>(coord[i]),std::get<1>(coord[i]),8,ORANGE);
 				elem->setLabel(std::to_string(i));
