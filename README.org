@@ -1,6 +1,6 @@
 * Algorithms workshop 
 (Warning : application still in development)
-|Convex Hull Example | Minimum spanning tree example| TSP example|
+| Minimum spanning tree example|Convex Hull Example | TSP example|
 |--------------------+------------------------------+------------|
 |[[file:assets/screenshots/1.png]]|[[file:assets/screenshots/2.png]]|[[file:assets/screenshots/3.png]]|
 ** How To compile :
