@@ -11,4 +11,5 @@ std::vector<int> computeConvexHullJarvis(std::vector<std::tuple<int,int>> coord)
 /*GrahamScan O(n log(n)) where n is number of input points*/
 std::vector<int> computeConvexHullGrahamScan(std::vector<std::tuple<int,int>> coord);
 
-
+/*Quickhull O(n^2) when input precision restricted O(n log(n)) where n number of input points */
+std::vector<int> computeConvexHullQuickhull(std::vector<std::tuple<int,int>> coord);

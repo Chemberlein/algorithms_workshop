@@ -119,3 +119,82 @@ vector<int> computeConvexHullGrahamScan(vector<tuple<int,int>> coord){
     }
     return ans;
 }
+
+// Finding most left and most right point if there multiple wichuse one with lowest y
+tuple<int,int> findeMostLeftMostRightPoints(vector<tuple<int,int>> coord){
+	int min=0,max =0;
+	for(int i =0;i<coord.size();i++){
+		if(get<0>(coord[i])<get<0>(coord[min]))
+			min = i;
+		else if(get<0>(coord[i])==get<0>(coord[min]))
+			min = (get<1>(coord[i])<get<1>(coord[min]))?i:min;
+		if(get<0>(coord[i])>get<0>(coord[max]))
+			max = i;
+		else if(get<0>(coord[i])==get<0>(coord[max]))
+			max = (get<1>(coord[i])<get<1>(coord[max]))?i:max;
+	}
+	return make_tuple(min,max);
+}
+
+vector<tuple<int,int,int>> selectPointRalativeToLine(tuple<int,int> a,tuple<int,int> b,int o, vector<tuple<int,int,int>> m){
+	vector<tuple<int,int,int>> res;
+	for(int i =0;i<m.size();i++){
+		tuple<int,int> c = make_tuple(get<1>(m[i]),get<2>(m[i]));
+		if(orentation(a,b,c)==o){
+			res.push_back(m[i]);
+		}
+	}
+	return res;
+}
+
+tuple<int,int,int> selectFarestPointFromTheLine(vector<tuple<int,int,int>> m,tuple<int,int,int> a,tuple<int,int,int> b){
+	int fid = -1;
+	float s = 0;
+	int xa = get<1>(a);
+	int xb = get<1>(b);
+	int ya = get<2>(a);
+	int yb = get<2>(b);
+	for(int i =0;i<m.size();i++){
+		tuple<int,int,int> np = m[i];
+		int xp = get<1>(m[i]),yp = get<2>(m[i]);
+		float ns = 0.5*(abs(xa*(yb-yp)+xb*(yp-ya)+xp*(ya-yb)));
+		if(fid==-1||s<ns)
+			fid=i,s=ns;
+	}
+	return m[fid];
+}
+
+vector<int> QuickhullRec(vector<tuple<int,int,int>> vt,int o,tuple<int,int,int> a,tuple<int,int,int> b){
+	if(vt.size()<1)
+		return {};
+	vector<int> ans;
+	tuple<int,int,int> p = selectFarestPointFromTheLine(vt,a,b);
+	vector<tuple<int,int,int>> n = selectPointRalativeToLine(make_tuple(get<1>(a),get<2>(a)),make_tuple(get<1>(p),get<2>(p)),o,vt);
+	vector<int> tmp = QuickhullRec(n,o,a,p);
+	ans.insert(ans.end(),tmp.begin(),tmp.end());
+	ans.push_back(get<0>(p));
+	n=selectPointRalativeToLine(make_tuple(get<1>(p),get<2>(p)),make_tuple(get<1>(b),get<2>(b)),o,vt);
+	tmp = QuickhullRec(n,o,p,b);
+	ans.insert(ans.end(),tmp.begin(),tmp.end());
+	return ans;
+}
+
+vector<int> computeConvexHullQuickhull(vector<tuple<int,int>> coord){
+	vector<int> ans;
+	vector<tuple<int,int,int>> m;
+	for(int i =0;i<coord.size();i++){
+		m.push_back(make_tuple(i,get<0>(coord[i]),get<1>(coord[i])));
+	}
+	tuple<int,int> min_max = findeMostLeftMostRightPoints(coord);
+	ans.push_back(get<0>(min_max));
+	vector<tuple<int,int,int>> n = selectPointRalativeToLine(coord[get<0>(min_max)],coord[get<1>(min_max)],1,m);
+	vector<int> tmp = QuickhullRec(n,1,m[get<0>(min_max)],m[get<1>(min_max)]);
+	ans.insert(ans.end(),tmp.begin(),tmp.end());
+	ans.push_back(get<1>(min_max));
+	n = selectPointRalativeToLine(coord[get<0>(min_max)],coord[get<1>(min_max)],2,m);
+	tmp = QuickhullRec(n,2,m[get<0>(min_max)],m[get<1>(min_max)]);
+	for(int i = tmp.size()-1;i>=0;i--)
+		ans.push_back(tmp[i]);
+	ans.push_back(get<0>(min_max));
+	return ans;
+}

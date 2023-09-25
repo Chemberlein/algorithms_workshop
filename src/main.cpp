@@ -41,6 +41,8 @@ class Action{
 				solveMST(computePrimMST,"Prime");
 			}else if(strcmp("mstk",token.c_str())==0){
 				solveMST(computeKruskalMST,"Kruskal");
+			}else if(strcmp("chq",token.c_str())==0){
+				solveConvexHull(computeConvexHullQuickhull,"Quickhull");
 			}else if(strcmp("chj",token.c_str())==0){
 				solveConvexHull(computeConvexHullJarvis,"Jarvis");
 			}else if(strcmp("chgs",token.c_str())==0){
@@ -70,7 +72,7 @@ class Action{
 			}else if(strcmp("about",token.c_str())==0){
 				logs->addNewLine("Hello and welcome , this application may help you to see resual of exection of different algorithms(mostly on graph). Please look at info to understand which functionality is avalible.\n");
 			}else if(strcmp("info",token.c_str())==0){
-				logs->addNewLine("rg <n> - generate random graph with n points\n clear - clear canvas\n ch[ni|fi|ri|ci]tsp Convex hull heuristic to solve tsp using nierest insertion (ni) or farthest insertion (fi) or random insertion (ri) or cheapest insertion (ci)\n chgs - convex hull Graham Scan\n chj - convex hull jarvis algorithm\n ritsp random insertion heuristic to solve tsp\n citsp cheapest insertion heuristic to sove tsp\n fitsp farthest insertion heuristic to solve tsp\n nitsp nearest insertion tsp solution\n mstp - show minimal spanding tree computed with Prim algorithm\n mstk - show minimal spanding tree computed with Kruscal algorithm\n nntsp - solve tsp with neares neigbor algorithm\n kmsttsp- tsp solution using Kruscal mst\n pmsttsp - tspsolution using Prim mst\n");
+				logs->addNewLine("rg <n> - generate random graph with n points\n clear - clear canvas\n ch[ni|fi|ri|ci]tsp Convex hull heuristic to solve tsp using nierest insertion (ni) or farthest insertion (fi) or random insertion (ri) or cheapest insertion (ci)\nchq - convex hull with Quickhull algorithm\n chgs - convex hull Graham Scan\n chj - convex hull jarvis algorithm\n ritsp random insertion heuristic to solve tsp\n citsp cheapest insertion heuristic to sove tsp\n fitsp farthest insertion heuristic to solve tsp\n nitsp nearest insertion tsp solution\n mstp - show minimal spanding tree computed with Prim algorithm\n mstk - show minimal spanding tree computed with Kruscal algorithm\n nntsp - solve tsp with neares neigbor algorithm\n kmsttsp- tsp solution using Kruscal mst\n pmsttsp - tspsolution using Prim mst\n");
 			}else{
 				logs->addNewLine("Unknown comand:"+str);
 			}
@@ -125,7 +127,7 @@ class Action{
 			}
 			std::vector<int> ConvHull = f(coord);
 			clearCanvas();
-			std::string logstr=name+" convex hull solution:\n Path: "+std::to_string(ConvHull[0])+"-";
+			std::string logstr=name+" convex hull solution:\n Path: "+std::to_string(ConvHull[0]);
 			double d = 0;
 			for(int i =1;i<ConvHull.size();i++){
 				int x1 = std::get<0>(coord[ConvHull[i-1]]);
@@ -133,7 +135,7 @@ class Action{
 				int y1 = std::get<1>(coord[ConvHull[i-1]]);
 				int y2 = std::get<1>(coord[ConvHull[i]]);
 				d+=std::sqrt(pow(x2-x1,2)+pow(y2-y1,2));
-				logstr=logstr+std::to_string(i)+"-";
+				logstr=logstr+"-"+std::to_string(ConvHull[i]);
 				Element* elem = new Line(x1,y1,x2,y2,2,BLACK);
 				gCanvas->addElement(elem);
 				elems.push_back(elem);
@@ -143,7 +145,7 @@ class Action{
 			int y1 = std::get<1>(coord[ConvHull[0]]);
 			int y2 = std::get<1>(coord[ConvHull[ConvHull.size()-1]]);
 			d+=std::sqrt(pow(x2-x1,2)+pow(y2-y1,2));
-			logstr=logstr+std::to_string(ConvHull[0])+"\n Total distance: "+std::to_string(d)+"\n";
+			logstr=logstr+"\n Total distance: "+std::to_string(d)+"\n";
 			for(int i = 0;i<coord.size();i++){
 				Element* elem = new Circle(std::get<0>(coord[i]),std::get<1>(coord[i]),8,ORANGE);
 				elem->setLabel(std::to_string(i));
