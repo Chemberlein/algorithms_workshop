@@ -1,10 +1,10 @@
 * Algorithms workshop 
 (Warning : application still in development)
-#+attr_html: :style display:inline; :height 60px
+#+attr_html: :style display:inline; :height 60px;
 [[file:assets/screenshots/1.png]]
-#+attr_html: :style display:inline; :height 70px
+#+attr_html: :style display:inline; :height 70px;
 [[file:assets/screenshots/2.png]]
-#+attr_html: :style display:inline; :height 50px
+#+attr_html: :style display:inline; :height 50px;
 [[file:assets/screenshots/3.png]]
 ** How To compile :
 1) clone this git repository
