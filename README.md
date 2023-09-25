@@ -1,4 +1,5 @@
 # Algorithms workshop 
+![image](https://github.com/Chemberlein/algorithms_workshop/assets/18319686/c6599f90-816e-40ea-94cc-bb9140178ffa)
 ## (Warrning : aplication still in develop)
 ## You need to install raylib libary to be able to compile this project
 ## Right now application support following comands :
