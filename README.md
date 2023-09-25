@@ -1,5 +1,6 @@
 * Algorithms workshop 
 (Warning : application still in development)
+
 ** How To compile :
 1) clone this git repository
 2) go to build directory (cd build)
