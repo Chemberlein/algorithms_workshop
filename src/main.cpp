@@ -82,6 +82,10 @@ class Action{
 					coord.push_back(std::make_tuple(i->getXCoord()[0],i->getYCoord()[0]));
 				}
 			}
+			if(coord.size()==0){
+				logs->addNewLine("You need to open/generate graph");
+				return;
+			}
 			std::vector<std::tuple<int,int>> ST = f(coord);
 			clearCanvas();
 			std::string logstr=name+" MST:\n Pairs:\n "; 
@@ -114,6 +118,10 @@ class Action{
 				if(i->getElementType() == ElementType::CIRCLE){
 					coord.push_back(std::make_tuple(i->getXCoord()[0],i->getYCoord()[0]));
 				}
+			}
+			if(coord.size()==0){
+				logs->addNewLine("You need to open/generate graph");
+				return;
 			}
 			std::vector<int> ConvHull = f(coord);
 			clearCanvas();
@@ -150,6 +158,10 @@ class Action{
 				if(i->getElementType() == ElementType::CIRCLE){
 					coord.push_back(std::make_tuple(i->getXCoord()[0],i->getYCoord()[0]));
 				}
+			}
+			if(coord.size()==0){
+				logs->addNewLine("You need to open/generate graph");
+				return;
 			}
 			std::vector<int> MSTResult = f(coord);
 			clearCanvas();

@@ -158,7 +158,7 @@ class Text: public Element{
 		bool doesNeedToExpand();
 	private:
 		int x,y,width,height;
-		std::string text;
+		std::string text="";
 		bool expand = true;
 		int padding = 10;
 };

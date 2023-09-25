@@ -452,11 +452,12 @@ void Text::draw(int l,int r,int t,int b){
 				yp+=ys;
 				xp=l;
 			}
+			word = "";
 		}
 	}
 }
 void Text::addNewLine(std::string s){
-	text= "# "+s+"\n"+text;
+	text= "# "+s+"\n";
 }
 int Text::getTopCoord(){
 	return y;
