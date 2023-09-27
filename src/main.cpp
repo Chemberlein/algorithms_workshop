@@ -8,9 +8,11 @@
 #include <tuple>
 #include <string.h>
 #include <random>
+#include <cstdlib>
 #include <stdlib.h>
 #include <sstream>
 #include <string.h>
+#include <unistd.h>
 #include "Algorithms/TravelSalesmanProblem/MSTTSP.h"
 #include "Algorithms/TravelSalesmanProblem/NearestNeighborTSP.h"
 #include "Algorithms/MinimumSpanningTree/MST.h"
@@ -41,12 +43,14 @@ class Action{
 				solveMST(computePrimMST,"Prime");
 			}else if(strcmp("mstk",token.c_str())==0){
 				solveMST(computeKruskalMST,"Kruskal");
+			}else if(strcmp("chdaq",token.c_str())==0){
+				bool r = solveConvexHull(computeConvexHullDivideAndConqure,"Divide and Conqure");
 			}else if(strcmp("chq",token.c_str())==0){
-				solveConvexHull(computeConvexHullQuickhull,"Quickhull");
+				bool r = solveConvexHull(computeConvexHullQuickhull,"Quickhull");
 			}else if(strcmp("chj",token.c_str())==0){
-				solveConvexHull(computeConvexHullJarvis,"Jarvis");
+				bool r = solveConvexHull(computeConvexHullJarvis,"Jarvis");
 			}else if(strcmp("chgs",token.c_str())==0){
-				solveConvexHull(computeConvexHullGrahamScan,"Graham Scan");
+				bool r = solveConvexHull(computeConvexHullGrahamScan,"Graham Scan");
 			}else if(strcmp("nntsp",token.c_str())==0){
 				solveTSP(computeNearestNeighborTSP,"Nearest Neighbor");
 			}else if(strcmp("kmsttsp",token.c_str())==0){
@@ -114,8 +118,9 @@ class Action{
 
 			logs->addNewLine(logstr);
 		}
-		static void solveConvexHull(std::function<std::vector<int>(std::vector<std::tuple<int,int>>)> f,std::string name){
+		static bool solveConvexHull(std::function<std::vector<int>(std::vector<std::tuple<int,int>>)> f,std::string name){
 			std::vector<std::tuple<int,int>> coord;
+			bool rv =true;
 			for(auto i : elems){
 				if(i->getElementType() == ElementType::CIRCLE){
 					coord.push_back(std::make_tuple(i->getXCoord()[0],i->getYCoord()[0]));
@@ -123,9 +128,14 @@ class Action{
 			}
 			if(coord.size()==0){
 				logs->addNewLine("You need to open/generate graph");
-				return;
+				return false;
 			}
 			std::vector<int> ConvHull = f(coord);
+			
+			if(ConvHull.size()==0){
+				std::cout << "Empty result \n";
+				return false;
+			}
 			clearCanvas();
 			std::string logstr=name+" convex hull solution:\n Path: "+std::to_string(ConvHull[0]);
 			double d = 0;
@@ -153,6 +163,7 @@ class Action{
 				elems.push_back(elem);
 			}
 			logs->addNewLine(logstr);
+			return rv;
 		};
 		static void solveTSP(std::function<std::vector<int>(std::vector<std::tuple<int,int>>)> f,std::string name){
 			std::vector<std::tuple<int,int>> coord;

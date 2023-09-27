@@ -13,3 +13,8 @@ std::vector<int> computeConvexHullGrahamScan(std::vector<std::tuple<int,int>> co
 
 /*Quickhull O(n^2) when input precision restricted O(n log(n)) where n number of input points */
 std::vector<int> computeConvexHullQuickhull(std::vector<std::tuple<int,int>> coord);
+
+/*Divide and conqure O(n log(n)) where n is number of input points*/
+std::vector<int> computeConvexHullDivideAndConqure(std::vector<std::tuple<int,int>> coord);
+
+

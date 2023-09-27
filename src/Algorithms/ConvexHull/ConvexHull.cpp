@@ -4,7 +4,11 @@
 #include <stack>
 #include <iostream>
 #include <algorithm>
-
+#include <random>
+#include <cstdlib>
+#include <cstdlib>
+#include <ctime>
+#include <map>
 using namespace std;
 int findLeftMostPoint(vector<tuple<int,int>> coord){
 	int ans = -1;
@@ -79,11 +83,16 @@ int nextToTop(stack<int> s){
 }
 vector<int> computeConvexHullGrahamScan(vector<tuple<int,int>> coord){
 	int n = coord.size();
-	if (n<3){
+	if (n<=3){
 		if(n==1)return{0};
         else if(n==2)return{0,1,0};
-        else if(n==1)return{0,1,2,0};
-		return {-1};
+        else if(n==3){
+        	if(orentation(0,1,2,coord)==1)
+        		return{0,1,2,0};
+        	else
+        		return{0,2,1,0};
+        }
+		return {};
 	}
 	vector<int> ans;
 	int bl = findMostBottomLeftPoint(coord);
@@ -196,5 +205,158 @@ vector<int> computeConvexHullQuickhull(vector<tuple<int,int>> coord){
 	for(int i = tmp.size()-1;i>=0;i--)
 		ans.push_back(tmp[i]);
 	ans.push_back(get<0>(min_max));
+	return ans;
+}
+
+// DEQ
+
+// Todo probably replace this function somwhere else 
+int getRandInt(int min, int max){
+	srand(time(nullptr)); 
+	return min+(rand()%(max-min));
+}
+
+float getMeanX(vector<tuple<int,int>> coord){
+	float s = 0;
+	for (auto i :coord){
+		s+=get<0>(i);
+	}
+	return s/coord.size();
+}
+
+tuple<vector<tuple<int,int>>,vector<tuple<int,int>>,map<int,int>,map<int,int>> divideCoordinates(vector<tuple<int,int>> coord){
+	vector<tuple<int,int>> lp,rp;
+	map<int,int> mlp,mrp;
+	float meanX = getMeanX(coord);
+	for(int o = 0;o<coord.size();o++){
+		if(get<0>(coord[o])<meanX || (get<0>(coord[o])==meanX && getRandInt(0,1))){
+			lp.push_back(coord[o]);
+			mlp[lp.size()-1] = o;
+		}else{
+			rp.push_back(coord[o]);
+			mrp[rp.size()-1] = o;
+		}
+	}	
+	return make_tuple(lp,rp,mlp,mrp);
+}
+
+vector<int> Conqure(vector<int> lp, vector<int> rp,vector<tuple<int,int>> coord){
+	//find max x left part
+	int p = 0;
+	for(int i = 0;i<lp.size();i++){
+		if(coord[lp[p]]<coord[lp[i]])
+			p=i;
+	}
+	//find min x right part 
+	int q = 0;
+	for(int i = 0;i<rp.size();i++){
+		if(coord[rp[q]]>coord[rp[i]])
+			q=i;
+	}
+	int cp_p = p,cp_q = q;
+	int prev_p,prev_q,o;
+	while(true){
+		prev_p=p;
+		prev_q=q;
+		if(rp.size()>1){
+			o = orentation(lp[p],rp[q],rp[(rp.size()+q-1)%rp.size()],coord); 
+			while (o==1){
+				q=(rp.size()+q-1)%rp.size();
+				o = orentation(lp[p],rp[q],rp[(rp.size()+q-1)%rp.size()],coord); 
+			}
+		}
+		if(lp.size()>1){
+			o = orentation(rp[q],lp[p],lp[(lp.size()+p+1)%lp.size()],coord); 
+			while (o==2){
+				p=(lp.size()+p+1)%lp.size();
+				o = orentation(rp[q],lp[p],lp[(lp.size()+p+1)%lp.size()],coord); 
+			}
+		}
+		if(prev_p==p && prev_q==q)
+			break;
+	};
+
+	while(true){
+		prev_p=cp_p;
+		prev_q=cp_q;
+		if(rp.size()>1){
+			o = orentation(lp[cp_p],rp[cp_q],rp[(rp.size()+cp_q+1)%rp.size()],coord); 
+			while (o==2){
+				cp_q=(rp.size()+cp_q+1)%rp.size();
+				o = orentation(lp[cp_p],rp[cp_q],rp[(rp.size()+cp_q+1)%rp.size()],coord);
+			}
+		}
+		if(lp.size()>1){
+			o = orentation(rp[cp_q],lp[cp_p],lp[(lp.size()+cp_p-1)%lp.size()],coord); 
+			while (o == 1){
+				cp_p=(lp.size()+cp_p-1)%lp.size();
+				o = orentation(rp[cp_q],lp[cp_p],lp[(lp.size()+cp_p-1)%lp.size()],coord);
+			}
+		}
+		if(prev_p==cp_p && prev_q==cp_q)
+			break;	
+	};
+	vector<int> ans;
+	while(p!=cp_p){
+		ans.push_back(lp[p]);
+		p=(lp.size()+p+1)%lp.size(); 
+	}
+	ans.push_back(lp[cp_p]);
+	while(q!=cp_q){
+		ans.push_back(rp[cp_q]);	 
+		cp_q=(rp.size()+cp_q+1)%rp.size();
+	}
+	ans.push_back(rp[cp_q]);
+	return ans;
+}
+
+
+vector<int> ConvertBack(map<int,int> m,vector<int> init){
+	vector<int> result;
+	for(auto o:init){
+		result.push_back(m[o]);
+	}
+	return result;
+}
+
+
+vector<int> DAQRec(vector<tuple<int,int>> coord){
+	vector<int> ans;
+	if(coord.size()<10){
+		ans =  computeConvexHullGrahamScan(coord);
+		if(ans.size()>0)
+			ans.erase(ans.end()-1);
+		return ans;
+	}
+	tuple<vector<tuple<int,int>>,vector<tuple<int,int>>,map<int,int>,map<int,int>> d = divideCoordinates(coord);
+	vector<int> lpa = DAQRec((get<0>(d)));
+	lpa = ConvertBack((get<2>(d)),(lpa));
+	vector<int> rpa = DAQRec((get<1>(d)));
+	rpa = ConvertBack((get<3>(d)),rpa);
+	if(lpa.size()==0)
+		return rpa;
+	else if(rpa.size()==0)
+		return lpa;
+	ans = Conqure(lpa,rpa,coord);
+	return ans;
+}
+
+
+vector<int> computeConvexHullDivideAndConqure(vector<tuple<int,int>> coord){
+	vector<int> ans;
+	tuple<vector<tuple<int,int>>,vector<tuple<int,int>>,map<int,int>,map<int,int>> d = divideCoordinates(coord);
+	vector<int> lpa = DAQRec((get<0>(d)));
+	lpa = ConvertBack((get<2>(d)),(lpa));
+	vector<int> rpa = DAQRec((get<1>(d)));
+	rpa = ConvertBack((get<3>(d)),rpa);
+	if(lpa.size()==0){
+		rpa.push_back(rpa[0]);
+		return rpa;
+	}else if(rpa.size()==0){
+		lpa.push_back(lpa[0]);
+		return lpa;
+	}
+	ans = Conqure(lpa,rpa,coord);
+	ans.push_back(ans[0]);
 	return ans;
 }
